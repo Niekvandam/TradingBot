@@ -33,6 +33,18 @@ def get_exchange_ticker(symbol):
     ticker = exchange.fetch_ticker(symbol)
     return ticker
 
+def get_exchange_price(symbol):
+    exchange = ccxt.coinbasepro({
+        'apiKey': config["coinbase"]["apiKey"],
+        'password': config["coinbase"]["password"],
+        'secret': config["coinbase"]["secret"],
+        'verbose': False,  # False -> no HTTP log
+        'enableRateLimit': True
+    })
+    ticker = exchange.fetch_ticker(symbol)
+    return json.dumps(ticker["info"]["price"])
+
+
 
 # TODO REPEATING CODE
 def get_market_open(symbol):
