@@ -30,11 +30,10 @@ SYMBOL = "BTC/EUR"
 
 market_opens = []
 market_closes = []
-
+long = True
 
 # -----------------------------------------------------------------------------
 
-long = True
 
 
 def wait_full_minute():
@@ -59,8 +58,10 @@ def long_or_short():
             print("IDLE || {}".format(datetime.now()))
 
 
-while datetime.utcnow().minute != 9:
+while datetime.utcnow().minute != 30:
     wait_full_minute()
 
-analyseMarket = task.LoopingCall(long_or_short())
-analyseMarket.start(180)
+loop = task.LoopingCall(long_or_short)
+loopdeferred = loop.start(180)
+
+reactor.run()
