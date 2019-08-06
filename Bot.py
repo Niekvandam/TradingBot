@@ -62,5 +62,5 @@ def long_or_short():
 while datetime.utcnow().minute != 9:
     wait_full_minute()
 
-l = task.LoopingCall(long_or_short())
-l.start(180)
+analyseMarket = task.LoopingCall(long_or_short())
+analyseMarket.start(180)
