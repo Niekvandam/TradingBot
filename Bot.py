@@ -1,15 +1,8 @@
 # -----------------------------------------------------------------------------
-import asyncio
-import configparser
-import json
 import os
 import sys
 import time
 from datetime import datetime
-from twisted.internet import task, reactor
-from pprint import pprint
-
-import ccxt
 
 import market
 # -----------------------------------------------------------------------------
@@ -25,11 +18,12 @@ sys.path.append(this_folder)
 TIMEOUT = 60.0
 REQUIRED_CANDLES = 2
 SYMBOL = "BTC/EUR"
-TIMEFRAME = "3m"
+TIMEFRAME = "1m"
 
 # -----------------------------------------------------------------------------
 
-long = True
+long = False
+
 
 # -----------------------------------------------------------------------------
 
@@ -46,19 +40,24 @@ def long_or_short():
     candles = market.heiken_ashi_candles
     previous_candle = candles[-2]
     current_candle = candles[-1]
-    if len(candles > REQUIRED_CANDLES):
-        if heiken_ashi(current_candle).close > heiken_ashi(current_candle).open > heiken_ashi(previous_candle).close:
+    if len(candles) > REQUIRED_CANDLES:
+        if current_candle.close > current_candle.open > previous_candle.close and long is False:
             print("{} || GOING LONG @ {}".format(datetime.now(), market.get_exchange_price(SYMBOL)))
-        elif heiken_ashi(current_candle).close < heiken_ashi(current_candle).open < heiken_ashi(previous_candle).close:
+        elif current_candle.close < current_candle.open < previous_candle.close and long is True:
             print("{} || GOING LONG @ {} ".format(datetime.now(), market.get_exchange_price(SYMBOL)))
         else:
             print("{} || IDLE".format(datetime.now()))
+            print("Open: {} || Close: {} || Previous open: {} || Candle time: {} || Previous candle time: {}".format(
+                current_candle.open, current_candle.close, previous_candle.close, current_candle.time,
+                previous_candle.time))
 
 
 market.create_heiken_ashi_candle(TIMEFRAME, SYMBOL)
+
+
 while True:
-     if datetime.utcnow().minute % 15 != 0:
-         continue
-     market.create_heiken_ashi_candle(TIMEFRAME, SYMBOL)
-     long_or_short()
-     wait_full_minute()
+    if datetime.utcnow().minute % 1 != 0:
+        continue
+    market.create_heiken_ashi_candle(TIMEFRAME, SYMBOL)
+    long_or_short()
+    wait_full_minute()

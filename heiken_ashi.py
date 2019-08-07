@@ -1,8 +1,10 @@
 class heiken_ashi:
 
-    def __init__(self, high, open, low, close):
-        self.high = high
-        self.open = open
-        self.low = low
-        self.close = close
+    def __init__(self, candlehigh, candleopen, candlelow, candleclose, candletime):
+        self.high = candlehigh
+        self.open = candleopen
+        self.low = candlelow
+        self.close = candleclose
+        self.time = candletime
+
 
