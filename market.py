@@ -3,6 +3,7 @@
 import configparser
 import datetime
 import json
+import operator
 import threading
 import time
 from pprint import pprint
@@ -60,8 +61,12 @@ def create_heiken_ashi_candle(timeframe, symbol):
 
 def monitor_prices():
     prices = {}
-    while datetime.datetime.utcnow().minute % 15 != 0:
-            prices[datetime.datetime.utcnow()] = get_exchange_price("BTC/EUR")
+    while datetime.datetime.utcnow().minute % 5 != 0:
+            prices[datetime.datetime.now()] = get_exchange_price("BTC/EUR")
             time.sleep(5)
     open = prices[list(prices.keys())[0]]
     close = prices[list(prices.keys())[-1]]
+    sortedprices = sorted(list(prices.values()))
+    high = sortedprices[-1]
+    low = sortedprices[0]
+    print("high: {} || low: {}".format(high, low))
