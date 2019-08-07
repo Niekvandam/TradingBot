@@ -64,7 +64,7 @@ def get_market_close(symbol):
 def get_new_open(previous_close):
     current_open = previous_close
     while previous_close == current_open:
-        time.sleep(20)
+        time.sleep(13)
         ticker = get_exchange_ticker("BTC/EUR")
         current_open = json.dumps(ticker["info"]["price"])
     # print("New market open {} || {} ".format(current_open, datetime.datetime.now()))
