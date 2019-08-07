@@ -35,7 +35,6 @@ long = True
 # -----------------------------------------------------------------------------
 
 
-
 def wait_full_minute():
     t = datetime.utcnow()
     sleeptime = 60 - (t.second + t.microsecond / 1000000.0)
@@ -58,10 +57,7 @@ def long_or_short():
             print("IDLE || {}".format(datetime.now()))
 
 
-while datetime.utcnow().minute != 57:
-    wait_full_minute()
-
-loop = task.LoopingCall(long_or_short)
-loopdeferred = loop.start(180)
-
-reactor.run()
+while True:
+    if datetime.utcnow().minute % 3 == 0:
+        long_or_short()
+        wait_full_minute()
