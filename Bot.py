@@ -52,12 +52,11 @@ def long_or_short():
                 previous_candle.time))
 
 
-market.create_heiken_ashi_candle(TIMEFRAME, SYMBOL)
+market.monitor_prices()
 
-
-while True:
-    if datetime.utcnow().minute % 1 != 0:
-        continue
-    market.create_heiken_ashi_candle(TIMEFRAME, SYMBOL)
-    long_or_short()
-    wait_full_minute()
+# while True:
+#     if datetime.utcnow().minute % 1 != 0:
+#         continue
+#     market.create_heiken_ashi_candle(TIMEFRAME, SYMBOL)
+#     long_or_short()
+#     wait_full_minute()

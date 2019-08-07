@@ -3,6 +3,7 @@
 import configparser
 import datetime
 import json
+import threading
 import time
 from pprint import pprint
 
@@ -55,6 +56,12 @@ def get_new_open(previous_close):
 def create_heiken_ashi_candle(timeframe, symbol):
     global heiken_ashi_candles
 
+
+
 def monitor_prices():
-    if datetime.utcnow().minute % 15 != 0:
-        get_exchange_price()
+    prices = {}
+    while datetime.datetime.utcnow().minute % 15 != 0:
+            prices[datetime.datetime.utcnow()] = get_exchange_price("BTC/EUR")
+            time.sleep(5)
+    open = prices[list(prices.keys())[0]]
+    close = prices[list(prices.keys())[-1]]
