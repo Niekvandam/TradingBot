@@ -6,4 +6,3 @@ class heiken_ashi:
         self.low = candlelow
         self.close = candleclose
 
-

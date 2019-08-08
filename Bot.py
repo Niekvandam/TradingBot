@@ -38,25 +38,17 @@ def wait_full_minute():
 def long_or_short():
     global long
     candles = market.heiken_ashi_candles
-    previous_candle = candles[-2]
-    current_candle = candles[-1]
     if len(candles) > REQUIRED_CANDLES:
+        previous_candle = candles[-2]
+        current_candle = candles[-1]
         if current_candle.close > current_candle.open > previous_candle.close and long is False:
             print("{} || GOING LONG @ {}".format(datetime.now(), market.get_exchange_price(SYMBOL)))
         elif current_candle.close < current_candle.open < previous_candle.close and long is True:
-            print("{} || GOING LONG @ {} ".format(datetime.now(), market.get_exchange_price(SYMBOL)))
+            print("{} || GOING SHORT @ {} ".format(datetime.now(), market.get_exchange_price(SYMBOL)))
         else:
             print("{} || IDLE".format(datetime.now()))
-            print("Open: {} || Close: {} || Previous open: {} || Candle time: {} || Previous candle time: {}".format(
-                current_candle.open, current_candle.close, previous_candle.close, current_candle.time,
-                previous_candle.time))
 
 
-market.monitor_prices()
-
-# while True:
-#     if datetime.utcnow().minute % 1 != 0:
-#         continue
-#     market.create_heiken_ashi_candle(TIMEFRAME, SYMBOL)
-#     long_or_short()
-#     wait_full_minute()
+while True:
+    market.monitor_prices(3)
+    long_or_short()

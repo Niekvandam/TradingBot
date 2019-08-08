@@ -58,22 +58,28 @@ def create_heiken_ashi_candle(timeframe, symbol):
     global heiken_ashi_candles
 
 
-
-def monitor_prices():
+def monitor_prices(timespan):
     prices = {}
-    while datetime.datetime.utcnow().minute % 2 != 0:
+    # Run for a minute outside of the normal while loop IF utcnow is a multiple of timespan
+    # If not done, the latter while loop would immediately be skipped resulting in an error
+    if datetime.datetime.utcnow().minute % timespan == 0:
+        while datetime.datetime.utcnow().minute % timespan == 0:
             prices[datetime.datetime.now()] = get_exchange_price("BTC/EUR")
-            time.sleep(5)
+            time.sleep(1)
+    while datetime.datetime.utcnow().minute % timespan != 0:
+            prices[datetime.datetime.now()] = get_exchange_price("BTC/EUR")
+            time.sleep(1)
+    candle_close = float(prices[list(prices.keys())[-1]].strip('\"'))
+    sortedprices = sorted(list(prices.values()))
+    candle_high = float(sortedprices[-1].strip('\"'))
+    candle_low = float(sortedprices[0].strip('\"'))
     if len(heiken_ashi_candles) > 1:
         previous_heiken_ashi = heiken_ashi_candles[-1]
         candle_open = ((previous_heiken_ashi.open + previous_heiken_ashi.close)/2)
     else:
-        candle_open = prices[list(prices.keys())[0]].strip('\"')
-    candle_close = prices[list(prices.keys())[-1]].strip('\"')
-    sortedprices = sorted(list(prices.values()))
-    candle_high = sortedprices[-1].strip('\"')
-    candle_low = sortedprices[0].strip('\"')
-    custom_close = (float(candle_open) + float(candle_high) + float(candle_low) + float(candle_close) / 4)
-    current_candle = heiken_ashi(float(candle_high), float(candle_open), float(candle_low), float(custom_close))
+        candle_open = (float(prices[list(prices.keys())[0]].strip('\"')) + candle_close) / 2
+    custom_close = ((candle_open + candle_high + candle_low + candle_close) / 4)
+    current_candle = heiken_ashi(candle_high, candle_open, candle_low, custom_close)
     heiken_ashi_candles.append(current_candle)
+    print("created candle || OPEN: {} || HIGH: {} || LOW: {} || CLOSE: {} ".format(candle_open, candle_high, candle_low, custom_close))
 
