@@ -43,10 +43,13 @@ def long_or_short():
         current_candle = candles[-1]
         if current_candle.close > current_candle.open and previous_candle.close > previous_candle.open and long is False:
             print("{} || GOING LONG @ {}".format(datetime.now(), market.get_exchange_price(SYMBOL)))
+            long = True
         elif current_candle.close < current_candle.open < previous_candle.close and long is True:
             print("{} || GOING SHORT @ {} ".format(datetime.now(), market.get_exchange_price(SYMBOL)))
+            long = False
         elif current_candle.open < current_candle.close < previous_candle.close and long is True:
             print("{} || GOING SHORT @ {} ".format(datetime.now(), market.get_exchange_price(SYMBOL)))
+            long = False
         else:
             print("{} || IDLE".format(datetime.now()))
 
