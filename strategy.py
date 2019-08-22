@@ -5,13 +5,13 @@ import market
 SYMBOL = "BTC/EUR"
 
 
-class Stragety(object):
+class Strategy(object):
 
     def __init__(self):
         print("Created new Strategy")
 
 
-class BarUpDnStrategy(Stragety):
+class BarUpDnStrategy(Strategy):
     REQUIRED_CANDLES = 2
 
     def __init__(self):
@@ -43,7 +43,7 @@ class BarUpDnStrategy(Stragety):
         return long
 
 
-class MacdMaStrategy(Stragety):
+class MacdMaStrategy(Strategy):
     def __init__(self):
         super().__init__()
 
