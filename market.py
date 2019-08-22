@@ -11,7 +11,7 @@ from pprint import pprint
 import ccxt
 
 # -----------------------------------------------------------------------------
-from Candle import HeikinAshi, DefaultCandle
+from candle import HeikinAshi, DefaultCandle
 
 config = configparser.ConfigParser()
 config.read("settings.SECRET.ini")
