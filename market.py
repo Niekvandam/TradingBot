@@ -18,30 +18,23 @@ config.read("settings.SECRET.ini")
 
 SYMBOL = 'BTC/EUR'
 
-exchange = ccxt.coinbasepro({
-    'apiKey': config["coinbase"]["apiKey"],
-    'password': config["coinbase"]["password"],
-    'secret': config["coinbase"]["secret"],
+exchange = ccxt.binance({
+    'apiKey': config["binance"]["apiKey"],
+    'secret': config["binance"]["secret"],
     'verbose': False,  # False -> no HTTP log
     'enableRateLimit': True
 })
 
 default_candles: List[DefaultCandle] = []
 heikin_ashi_candles: List[HeikinAshi] = []
-ohlcv_data = []
+ohlcv_data: List[tuple] = []
 prices = {}
+
 
 # ----------------------------------------------------------------------------
 
 # TODO initialise exchange outside of method
 def get_exchange_price(symbol):
-    exchange = ccxt.coinbasepro({
-        'apiKey': config["coinbase"]["apiKey"],
-        'password': config["coinbase"]["password"],
-        'secret': config["coinbase"]["secret"],
-        'verbose': False,  # False -> no HTTP log
-        'enableRateLimit': True
-    })
     ticker = exchange.fetch_ticker(symbol)
     return json.dumps(ticker["info"]["price"])
 
@@ -56,12 +49,8 @@ def get_new_open(previous_close):
     return current_open
 
 
-def create_heikin_ashi_candle(timeframe, symbol):
-    global heikin_ashi_candles
-
-
 # TODO create non heikin-ashin candes
-def create_heikin_candle(timespan):
+def create_heikin_ashi_candle(timespan):
     monitor_prices(timespan, False)
     candle_close = float(prices[list(prices.keys())[-1]].strip('\"'))
     sortedprices = sorted(list(prices.values()))
@@ -81,12 +70,14 @@ def create_heikin_candle(timespan):
 
 # TODO remove redundant/double code
 def create_default_candle(timespan):
+    global ohlcv_data
     monitor_prices(timespan, False)
     candle_close = float(prices[list(prices.keys())[-1]].strip('\"'))
     candle_open = float(prices[list(prices.keys())[0]].strip('\"'))
     sortedprices = sorted(list(prices.values()))
     candle_high = float(sortedprices[-1].strip('\"'))
     candle_low = float(sortedprices[0].strip('\"'))
+    ohlcv_data.append(exchange.milliseconds(), candle_open, candle_high, candle_low, candle_close, 0)
     current_candle = DefaultCandle(candle_high, candle_open, candle_low, candle_close)
     default_candles.append(current_candle)
     print("created candle || OPEN: {} || HIGH: {} || LOW: {} || CLOSE: {} ".format(candle_open, candle_high,
@@ -102,27 +93,25 @@ def monitor_prices(timespan, retry):
         # If not done, the latter while loop would immediately be skipped resulting in an error
         if datetime.datetime.utcnow().minute % timespan == 0:
             while datetime.datetime.utcnow().minute % timespan == 0:
-                prices[datetime.datetime.now()] = get_exchange_price("BTC/EUR")
+                prices[datetime.datetime.now()] = get_exchange_price("BTC/USDT")
                 time.sleep(1)
         while datetime.datetime.utcnow().minute % timespan != 0:
-            prices[datetime.datetime.now()] = get_exchange_price("BTC/EUR")
+            prices[datetime.datetime.now()] = get_exchange_price("BTC/USDT")
             time.sleep(1)
+    # TODO what errors are thrown?
     except:
         monitor_prices(timespan, True)
 
+
 def create_ohlcv_list(candle_amount, timespan):
     global ohlcv_data
+    ohlcv_data.clear()
     hold = 30
     timeframe = str(timespan) + "m"
-    now = datetime.datetime.now()
-    datetime_delta = datetime.timedelta(minutes=(timespan * candle_amount))
-    first_candle = now - datetime_delta
-    while first_candle < now:
-        try:
-            ohlcvs = exchange.fetch_ohlcv('BTC/EUR', timeframe, first_candle)
-            if len(ohlcvs) > 0:
-                first_candle = ohlcvs[-1][0] + timespan * 5  # good
-                ohlcv_data += ohlcvs
-        except(ccxt.ExchangeError, ccxt.AuthenticationError, ccxt.ExchangeNotAvailable, ccxt.RequestTimeout) as error:
-            print('Got an error', type(error).__name__, error.args, ', retrying in', hold, 'seconds...')
-            time.sleep(hold)
+    try:
+        first_candle = exchange.milliseconds() - timespan * candle_amount * 60 * 1000  # current time - amount of candles * timespan per candle * minute * milliseconds
+        ohlcv_data = exchange.fetch_ohlcv('BTC/USDT', timeframe, first_candle)
+    except(ccxt.ExchangeError, ccxt.AuthenticationError, ccxt.ExchangeNotAvailable, ccxt.RequestTimeout) as error:
+        print('Got an error', type(error).__name__, error.args, ', retrying in', hold, 'seconds...')
+        time.sleep(hold)
+        create_ohlcv_list(candle_amount, timespan)

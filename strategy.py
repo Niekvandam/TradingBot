@@ -1,7 +1,7 @@
 import datetime
 
 import market
-
+import indicator
 SYMBOL = "BTC/EUR"
 
 
@@ -47,7 +47,10 @@ class MacdMaStrategy(Strategy):
     def __init__(self):
         super().__init__()
 
-    def long_or_short(self):
+    def long_or_short(self, timeframe):
         if not len(market.default_candles) >= 100:
-            market.create_ohlcv_list(100, 30)
-
+            market.create_ohlcv_list(100, timeframe)
+        ma12 = indicator.create_ma(market.ohlcv_data, 12)
+        ma26 = indicator.create_ma(market.ohlcv_data, 26)
+        macd = ma12 - ma26
+        print("12 BAR OHLCV: {} \n26 BAR OHLCV: {} \nMACD: {} \n\n".format(ma12, ma26, macd))
