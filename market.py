@@ -11,7 +11,7 @@ from pprint import pprint
 import ccxt
 
 # -----------------------------------------------------------------------------
-from heiken_ashi import heiken_ashi
+from Candle import HeikinAshi, DefaultCandle
 
 config = configparser.ConfigParser()
 config.read("settings.SECRET.ini")
@@ -28,7 +28,10 @@ exchange = ccxt.coinbasepro({
     'enableRateLimit': True
 })
 
-heiken_ashi_candles = []
+default_candles = []
+heikin_ashi_candles = []
+prices = {}
+
 
 # ----------------------------------------------------------------------------
 
@@ -54,34 +57,54 @@ def get_new_open(previous_close):
     return current_open
 
 
-def create_heiken_ashi_candle(timeframe, symbol):
-    global heiken_ashi_candles
+def create_heikin_ashi_candle(timeframe, symbol):
+    global heikin_ashi_candles
 
 
-def monitor_prices(timespan):
-    prices = {}
-    # Run for a minute outside of the normal while loop IF utcnow is a multiple of timespan
-    # If not done, the latter while loop would immediately be skipped resulting in an error
+# TODO create non heikin-ashin candes
+def create_heikin_candle(timespan):
+    monitor_prices(timespan, False)
+    candle_close = float(prices[list(prices.keys())[-1]].strip('\"'))
+    sortedprices = sorted(list(prices.values()))
+    candle_high = float(sortedprices[-1].strip('\"'))
+    candle_low = float(sortedprices[0].strip('\"'))
+    if len(heikin_ashi_candles) > 1:
+        previous_heiken_ashi = heikin_ashi_candles[-1]
+        candle_open = ((previous_heiken_ashi.open + previous_heiken_ashi.close) / 2)
+    else:
+        candle_open = (float(prices[list(prices.keys())[0]].strip('\"')) + candle_close) / 2
+    custom_close = ((candle_open + candle_high + candle_low + candle_close) / 4)
+    current_candle = HeikinAshi(candle_high, candle_open, candle_low, custom_close)
+    heikin_ashi_candles.append(current_candle)
+    print("created Heikin ashin || OPEN: {} || HIGH: {} || LOW: {} || CLOSE: {} ".format(candle_open, candle_high,
+                                                                                         candle_low, custom_close))
+
+
+def create_default_candle(timespan):
+    monitor_prices(timespan, False)
+    candle_close = float(prices[list(prices.keys())[-1]].strip('\"'))
+    candle_open = float(prices[list(prices.keys())[0]].strip('\"'))
+    sortedprices = sorted(list(prices.values()))
+    candle_high = float(sortedprices[-1].strip('\"'))
+    candle_low = float(sortedprices[0].strip('\"'))
+    current_candle = DefaultCandle(candle_high, candle_open, candle_low, candle_close)
+    default_candles.append(current_candle)
+    print("created candle || OPEN: {} || HIGH: {} || LOW: {} || CLOSE: {} ".format(candle_open, candle_high,
+                                                                                   candle_low, candle_close))
+
+
+# 'Monitors' the price for the given timespan(minutes) and fills a dictionary as result
+def monitor_prices(timespan, retry):
+    if not retry: prices.clear()
     try:
+        # Run for a minute outside of the normal while loop IF utcnow is a multiple of timespan
+        # If not done, the latter while loop would immediately be skipped resulting in an error
         if datetime.datetime.utcnow().minute % timespan == 0:
             while datetime.datetime.utcnow().minute % timespan == 0:
                 prices[datetime.datetime.now()] = get_exchange_price("BTC/EUR")
                 time.sleep(1)
         while datetime.datetime.utcnow().minute % timespan != 0:
-                prices[datetime.datetime.now()] = get_exchange_price("BTC/EUR")
-                time.sleep(1)
-        candle_close = float(prices[list(prices.keys())[-1]].strip('\"'))
-        sortedprices = sorted(list(prices.values()))
-        candle_high = float(sortedprices[-1].strip('\"'))
-        candle_low = float(sortedprices[0].strip('\"'))
-        if len(heiken_ashi_candles) > 1:
-            previous_heiken_ashi = heiken_ashi_candles[-1]
-            candle_open = ((previous_heiken_ashi.open + previous_heiken_ashi.close)/2)
-        else:
-            candle_open = (float(prices[list(prices.keys())[0]].strip('\"')) + candle_close) / 2
-        custom_close = ((candle_open + candle_high + candle_low + candle_close) / 4)
-        current_candle = heiken_ashi(candle_high, candle_open, candle_low, custom_close)
-        heiken_ashi_candles.append(current_candle)
-        print("created candle || OPEN: {} || HIGH: {} || LOW: {} || CLOSE: {} ".format(candle_open, candle_high, candle_low, custom_close))
+            prices[datetime.datetime.now()] = get_exchange_price("BTC/EUR")
+            time.sleep(1)
     except:
-        monitor_prices(timespan)
+        monitor_prices(timespan, True)

@@ -6,7 +6,7 @@ from datetime import datetime
 
 import market
 # -----------------------------------------------------------------------------
-from heiken_ashi import heiken_ashi
+from Candle import heiken_ashi
 
 this_folder = os.path.dirname(os.path.abspath(__file__))
 root_folder = os.path.dirname(os.path.dirname(this_folder))
@@ -37,7 +37,7 @@ def wait_full_minute():
 
 def long_or_short():
     global long
-    candles = market.heiken_ashi_candles
+    candles = market.heikin_ashi_candles
     if len(candles) > REQUIRED_CANDLES:
         previous_candle = candles[-2]
         current_candle = candles[-1]
