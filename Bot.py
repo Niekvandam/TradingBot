@@ -6,7 +6,7 @@ from datetime import datetime
 
 import market
 # -----------------------------------------------------------------------------
-from Candle import heiken_ashi
+from candle import heiken_ashi
 
 this_folder = os.path.dirname(os.path.abspath(__file__))
 root_folder = os.path.dirname(os.path.dirname(this_folder))
