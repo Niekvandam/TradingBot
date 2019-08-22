@@ -7,6 +7,7 @@ import operator
 import threading
 import time
 from pprint import pprint
+from typing import List, Any
 
 import ccxt
 
@@ -28,14 +29,14 @@ exchange = ccxt.coinbasepro({
     'enableRateLimit': True
 })
 
-default_candles = []
-heikin_ashi_candles = []
+default_candles: List[DefaultCandle] = []
+heikin_ashi_candles: List[HeikinAshi] = []
 prices = {}
 
 
 # ----------------------------------------------------------------------------
 
-
+# TODO initialise exchange outside of method
 def get_exchange_price(symbol):
     exchange = ccxt.coinbasepro({
         'apiKey': config["coinbase"]["apiKey"],
@@ -48,6 +49,7 @@ def get_exchange_price(symbol):
     return json.dumps(ticker["info"]["price"])
 
 
+# TODO Neccesary?
 def get_new_open(previous_close):
     current_open = previous_close
     while previous_close == current_open:
@@ -80,6 +82,7 @@ def create_heikin_candle(timespan):
                                                                                          candle_low, custom_close))
 
 
+# TODO remove redundant/double code
 def create_default_candle(timespan):
     monitor_prices(timespan, False)
     candle_close = float(prices[list(prices.keys())[-1]].strip('\"'))

@@ -1,6 +1,7 @@
 import datetime
-
 import market
+
+SYMBOL = "BTC/EUR"
 
 
 class Stragety(object):
@@ -11,7 +12,6 @@ class Stragety(object):
 
 class BarUpDnStrategy(Stragety):
     REQUIRED_CANDLES = 2
-    SYMBOL = "BTC/EUR"
 
     def __init__(self):
         super().__init__()
@@ -41,9 +41,12 @@ class BarUpDnStrategy(Stragety):
         return long
 
 
-class MacDStrategy(Stragety):
+class MacdMaStrategy(Stragety):
     def __init__(self):
         super().__init__()
 
     def long_or_short(self):
-        return False
+        if not len(market.default_candles) >= 100:
+            market.get
+
+
