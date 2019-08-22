@@ -1,4 +1,5 @@
 import datetime
+
 import market
 
 SYMBOL = "BTC/EUR"
@@ -16,8 +17,9 @@ class BarUpDnStrategy(Stragety):
     def __init__(self):
         super().__init__()
 
-    #USES HEIKIN ASHIN CANDLES! NOT DEFAULT
-    #TODO dynamic candle desicion making
+    # USES HEIKIN ASHIN CANDLES! NOT DEFAULT
+    # TODO dynamic candle desicion making
+    # TODO refactor code
     def long_or_short(self, long):
         global REQUIRED_CANDLES
         global SYMBOL
@@ -47,6 +49,5 @@ class MacdMaStrategy(Stragety):
 
     def long_or_short(self):
         if not len(market.default_candles) >= 100:
-            market.get
-
+            market.create_ohlcv_list(100, 30)
 

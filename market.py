@@ -3,10 +3,7 @@
 import configparser
 import datetime
 import json
-import operator
-import threading
 import time
-from pprint import pprint
 from typing import List, Any
 
 import ccxt
@@ -31,8 +28,8 @@ exchange = ccxt.coinbasepro({
 
 default_candles: List[DefaultCandle] = []
 heikin_ashi_candles: List[HeikinAshi] = []
+ohlcv_data = []
 prices = {}
-
 
 # ----------------------------------------------------------------------------
 
@@ -98,6 +95,7 @@ def create_default_candle(timespan):
 
 # 'Monitors' the price for the given timespan(minutes) and fills a dictionary as result
 def monitor_prices(timespan, retry):
+    hold = 30
     if not retry: prices.clear()
     try:
         # Run for a minute outside of the normal while loop IF utcnow is a multiple of timespan
@@ -111,3 +109,20 @@ def monitor_prices(timespan, retry):
             time.sleep(1)
     except:
         monitor_prices(timespan, True)
+
+def create_ohlcv_list(candle_amount, timespan):
+    global ohlcv_data
+    hold = 30
+    timeframe = str(timespan) + "m"
+    now = datetime.datetime.now()
+    datetime_delta = datetime.timedelta(minutes=(timespan * candle_amount))
+    first_candle = now - datetime_delta
+    while first_candle < now:
+        try:
+            ohlcvs = exchange.fetch_ohlcv('BTC/EUR', timeframe, first_candle)
+            if len(ohlcvs) > 0:
+                first_candle = ohlcvs[-1][0] + timespan * 5  # good
+                ohlcv_data += ohlcvs
+        except(ccxt.ExchangeError, ccxt.AuthenticationError, ccxt.ExchangeNotAvailable, ccxt.RequestTimeout) as error:
+            print('Got an error', type(error).__name__, error.args, ', retrying in', hold, 'seconds...')
+            time.sleep(hold)
