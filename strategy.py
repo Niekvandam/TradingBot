@@ -1,15 +1,24 @@
+# Imports
+# -----------------------------------------------------------------------------
 import datetime
-
 import market
 import indicator
-SYMBOL = "BTC/EUR"
 
+
+# Universal variables used throughout the class
+# -----------------------------------------------------------------------------
+SYMBOL = "BTC/USDT"
+
+# The base strategy class
+# -----------------------------------------------------------------------------
 
 class Strategy(object):
 
     def __init__(self):
         print("Created new Strategy")
 
+# The BarUpDnStrategy class
+# -----------------------------------------------------------------------------
 
 class BarUpDnStrategy(Strategy):
     REQUIRED_CANDLES = 2
@@ -20,6 +29,7 @@ class BarUpDnStrategy(Strategy):
     # USES HEIKIN ASHIN CANDLES! NOT DEFAULT
     # TODO dynamic candle desicion making
     # TODO refactor code
+    # Analyses the current market and decides whether to go long or short based on the previous opens/closes
     def long_or_short(self, long):
         global REQUIRED_CANDLES
         global SYMBOL
@@ -43,14 +53,14 @@ class BarUpDnStrategy(Strategy):
         return long
 
 
+# The MacdMaStrategy class
+# -----------------------------------------------------------------------------
 class MacdMaStrategy(Strategy):
     def __init__(self):
         super().__init__()
 
+    # Analyses the current market and decides whether to go long or short based on Macd and MA
     def long_or_short(self, timeframe):
         if not len(market.default_candles) >= 100:
             market.create_ohlcv_list(100, timeframe)
-        ma12 = indicator.create_ma(market.ohlcv_data, 12)
-        ma26 = indicator.create_ma(market.ohlcv_data, 26)
-        macd = ma12 - ma26
-        print("12 BAR OHLCV: {} \n26 BAR OHLCV: {} \nMACD: {} \n\n".format(ma12, ma26, macd))
+        print("MACD is: {}".format(indicator.calculate_macd(market.ohlcv_data)))
